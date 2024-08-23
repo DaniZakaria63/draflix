@@ -1,0 +1,34 @@
+{
+  "Search": [
+    {
+      "Title": "Lego Marvel Avengers: Code Red",
+      "Year": "2023",
+      "imdbID": "tt28477867",
+      "Type": "movie",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BYWFiNDBkZGUtZmQzZS00N2Q3LWI1MjItZmJiMjg3YTZjYjk4XkEyXkFqcGdeQXVyNTc4MjczMTM@._V1_SX300.jpg"
+    },
+    {
+      "Title": "Kang vs the Avengers",
+      "Year": "2023–",
+      "imdbID": "tt30137323",
+      "Type": "series",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BZWY5YjJkNjktOGI0ZC00ZmQ2LTg5NDgtOTBkMWU4YzBmYmI5XkEyXkFqcGdeQXVyMTMxMDgyODAx._V1_SX300.jpg"
+    },
+    {
+      "Title": "Avengers: Doom of the World",
+      "Year": "2023",
+      "imdbID": "tt26699418",
+      "Type": "movie",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BNmM3YTIwMDEtZmJhMS00NWJkLWJmZWQtMzE0OWIyNDBhOTE4XkEyXkFqcGdeQXVyNzEyMjMyODQ@._V1_SX300.jpg"
+    },
+    {
+      "Title": "Marvel Avengers Campus: Vibranium Crisis",
+      "Year": "2023–",
+      "imdbID": "tt28477305",
+      "Type": "series",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BNjJmZDYyZWQtYzFlNS00M2IzLThkYWUtYzc5OGU4YWU1YzE2XkEyXkFqcGdeQXVyMjMxODU2ODk@._V1_SX300.jpg"
+    }
+  ],
+  "totalResults": "4",
+  "Response": "True"
+}
