@@ -20,6 +20,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "OMDB_API_KEY", "\"" + getOMDBApiKey() + "\"")
     }
 
     buildTypes {
@@ -40,6 +41,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
@@ -89,4 +91,8 @@ dependencies {
     androidTestImplementation(libs.hilt.android.testing)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+fun getOMDBApiKey(): String? {
+    return project.findProperty("omdb_access_key") as? String
 }
