@@ -13,8 +13,9 @@ room = "2.6.1"
 okhttpLogging = "4.12.0"
 
 # compose
+compose-compiler = "1.5.13"
 activityCompose = "1.9.1"
-composeBom = "2024.04.01"
+composeBom = "2024.05.00"
 navigation = "2.7.7"
 pagingCompose = "3.3.0-rc01"
 viewModelCompose = "2.7.0"
@@ -45,6 +46,7 @@ androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-view
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingCompose" }
