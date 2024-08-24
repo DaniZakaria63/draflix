@@ -11,4 +11,5 @@ data class SearchEntity(
     @ColumnInfo(name = "year") val year: String = "",
     @ColumnInfo(name = "type") val type: String = "",
     @ColumnInfo(name = "poster") val poster: String = "",
+    @ColumnInfo(name = "page") val page: Int = 0,
 )
