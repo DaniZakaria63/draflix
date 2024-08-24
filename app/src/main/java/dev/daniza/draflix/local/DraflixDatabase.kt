@@ -4,12 +4,17 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import dev.daniza.draflix.local.dao.MovieDao
+import dev.daniza.draflix.local.dao.SearchDao
 import dev.daniza.draflix.local.entity.MovieEntity
 import dev.daniza.draflix.local.entity.SearchEntity
 import dev.daniza.draflix.utilities.LOCAL_DATABASE_NAME
 
 @Database(entities = [MovieEntity::class, SearchEntity::class], version = 1)
 abstract class DraflixDatabase : RoomDatabase() {
+    abstract fun movieDao(): MovieDao
+    abstract fun searchDao(): SearchDao
+
     companion object {
 
         // For Singleton instantiation
