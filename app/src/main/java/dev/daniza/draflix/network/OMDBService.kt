@@ -3,7 +3,6 @@ package dev.daniza.draflix.network
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import dev.daniza.draflix.BuildConfig
-import dev.daniza.draflix.utilities.OMDB_BASE_URL
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -27,7 +26,7 @@ interface OMDBService {
     ): Response<JsonObject>
 
     companion object {
-        fun create(keyAccessInterceptor: Interceptor): OMDBService {
+        fun create(baseUrl: String, keyAccessInterceptor: Interceptor): OMDBService {
             val logger = HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BASIC
             }
@@ -38,7 +37,7 @@ interface OMDBService {
             }.build()
 
             return Retrofit.Builder()
-                .baseUrl(OMDB_BASE_URL)
+                .baseUrl(baseUrl)
                 .client(client)
                 .addConverterFactory(
                     GsonConverterFactory.create(

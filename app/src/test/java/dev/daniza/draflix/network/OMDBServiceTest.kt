@@ -5,15 +5,23 @@ import com.google.gson.JsonObject
 import dev.daniza.draflix.network.model.ResponseSearchList
 import dev.daniza.draflix.network.model.ResponseSingle
 import dev.daniza.draflix.network.model.responseParsing
+import dev.daniza.draflix.utilities.OMDB_BASE_URL
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.SocketPolicy
+import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.net.SocketException
+import java.net.SocketTimeoutException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OMDBServiceTest {
@@ -21,10 +29,17 @@ class OMDBServiceTest {
     private val realKeyAccess = "10a5e46b"
     private val fakeKeyAccess = "fake_key_access"
     private var omdbKeyInterceptor = OMDBKeyInterceptor(keyAccess = realKeyAccess)
+    private val mockWebServer = MockWebServer()
 
     @Before
     fun setup() {
-        service = OMDBService.create(omdbKeyInterceptor)
+        service = OMDBService.create(OMDB_BASE_URL, omdbKeyInterceptor)
+        mockWebServer.start(port = 8000)
+    }
+
+    @After
+    fun tearDown() {
+        mockWebServer.shutdown()
     }
 
     @Test
@@ -38,7 +53,7 @@ class OMDBServiceTest {
     @Test
     fun should_get_error_response() = runTest {
         omdbKeyInterceptor = OMDBKeyInterceptor(keyAccess = fakeKeyAccess)
-        service = OMDBService.create(omdbKeyInterceptor)
+        service = OMDBService.create(OMDB_BASE_URL, omdbKeyInterceptor)
         val response = service.getMovies(id = "tt3896198")
         advanceUntilIdle()
         assertFalse(response.isSuccessful)
@@ -127,5 +142,50 @@ class OMDBServiceTest {
         val result = responseParsing(response, ResponseSearchList::class.java)
         assertThat(result.isFailure, `is`(true))
         assertThat(result.exceptionOrNull()?.message, `is`("Movie not found!"))
+    }
+
+    /*NETWORK TROUBLE USE CASE*/
+    @Test
+    fun givenNoInternet_whenGetMovies_thenReturnNetworkError() = runTest {
+        service = OMDBService.create(
+            "http://${mockWebServer.hostName}:${mockWebServer.port}",
+            omdbKeyInterceptor
+        )
+
+        val response = MockResponse()
+            .setSocketPolicy(SocketPolicy.DISCONNECT_AT_START)
+
+        mockWebServer.enqueue(response)
+
+        try {
+            val result = service.getMovies(id = "tt3896198")
+            assertFalse(result.isSuccessful)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            assertThat(e, instanceOf(SocketException::class.java))
+        }
+        advanceUntilIdle()
+    }
+
+    @Test
+    fun givenRequestDelay_whenGetMovies_thenReturnTimeout() = runTest {
+        service = OMDBService.create(
+            "http://${mockWebServer.hostName}:${mockWebServer.port}",
+            omdbKeyInterceptor
+        )
+
+        val response = MockResponse()
+            .setBodyDelay(600, java.util.concurrent.TimeUnit.MINUTES)
+            .setHeadersDelay(600, java.util.concurrent.TimeUnit.MINUTES)
+        mockWebServer.enqueue(response)
+
+        try {
+            val result = service.getMovies(id = "tt3896198")
+            assertFalse(result.isSuccessful)
+        } catch (e: SocketTimeoutException) {
+            e.printStackTrace()
+            assertThat(e, instanceOf(SocketTimeoutException::class.java))
+        }
+        advanceUntilIdle()
     }
 }
