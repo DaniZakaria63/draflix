@@ -1,10 +1,14 @@
 package dev.daniza.draflix.local
 
 import android.content.Context
+import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import dev.daniza.draflix.local.entity.MovieEntity
+import dev.daniza.draflix.local.entity.SearchEntity
 import dev.daniza.draflix.utilities.LOCAL_DATABASE_NAME
 
+@Database(entities = [MovieEntity::class, SearchEntity::class], version = 1)
 abstract class DraflixDatabase : RoomDatabase() {
     companion object {
 
