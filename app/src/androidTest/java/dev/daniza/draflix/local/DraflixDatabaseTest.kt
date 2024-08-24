@@ -1,5 +1,6 @@
 package dev.daniza.draflix.local
 
+import androidx.paging.PagingSource
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -13,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
@@ -70,8 +72,21 @@ class DraflixDatabaseTest {
         val searchList = Gson().fromJson(dummySearchList, Array<SearchEntity>::class.java)
         searchDao.insertAll(searchList.toList())
 
-        val result = searchDao.getAll()
-        assertThat(result.size, `is`(10))
+        val latch = CountDownLatch(1)
+        val job = async(Dispatchers.IO) {
+            val result = searchDao.getAll().load(
+                PagingSource.LoadParams.Refresh(
+                    key = null,
+                    loadSize = Int.MAX_VALUE,
+                    placeholdersEnabled = false
+                )
+            )
+            assertThat(result, instanceOf(PagingSource.LoadResult.Page::class.java))
+            assertThat((result as PagingSource.LoadResult.Page).data.size, `is`(10))
+            latch.countDown()
+        }
+        latch.await()
+        job.cancelAndJoin()
     }
 
     @Test
@@ -81,10 +96,16 @@ class DraflixDatabaseTest {
 
         val latch = CountDownLatch(1)
         val job = async(Dispatchers.IO) {
-            searchDao.getSearchByQuery(type = "series").collect { result ->
-                assertThat(result.size, `is`(3))
-                latch.countDown()
-            }
+            val result = searchDao.getSearchByQuery(type = "series").load(
+                PagingSource.LoadParams.Refresh(
+                    key = null,
+                    loadSize = Int.MAX_VALUE,
+                    placeholdersEnabled = false
+                )
+            )
+            assertThat(result, instanceOf(PagingSource.LoadResult.Page::class.java))
+            assertThat((result as PagingSource.LoadResult.Page).data.size, `is`(3))
+            latch.countDown()
         }
         latch.await()
         job.cancelAndJoin()

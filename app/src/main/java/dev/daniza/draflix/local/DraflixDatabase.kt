@@ -8,10 +8,14 @@ import dev.daniza.draflix.local.dao.MovieDao
 import dev.daniza.draflix.local.dao.RemoteKeysDao
 import dev.daniza.draflix.local.dao.SearchDao
 import dev.daniza.draflix.local.entity.MovieEntity
+import dev.daniza.draflix.local.entity.RemoteKeysEntity
 import dev.daniza.draflix.local.entity.SearchEntity
 import dev.daniza.draflix.utilities.LOCAL_DATABASE_NAME
 
-@Database(entities = [MovieEntity::class, SearchEntity::class], version = 1)
+@Database(
+    entities = [MovieEntity::class, SearchEntity::class, RemoteKeysEntity::class],
+    version = 2
+)
 abstract class DraflixDatabase : RoomDatabase() {
     abstract fun movieDao(): MovieDao
     abstract fun searchDao(): SearchDao
