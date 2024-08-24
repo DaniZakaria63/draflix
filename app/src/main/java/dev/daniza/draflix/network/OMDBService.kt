@@ -15,8 +15,15 @@ import retrofit2.http.Query
 
 interface OMDBService {
     @GET("/")
-    suspend fun getMovieDetail(
-        @Query("i") id: String
+    suspend fun getMovies(
+        @Query("i") id: String? = null,
+        @Query("t") title: String? = null,
+        @Query("s") search: String? = null,
+        @Query("y") year: String? = null,
+        @Query("plot") plot: String? = null,
+        @Query("type") type: String? = null,
+        @Query("page") page: Int? = null,
+        @Query("callback") callback: String? = null,
     ): Response<JsonObject>
 
     companion object {

@@ -1,6 +1,8 @@
 package dev.daniza.draflix.network
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
+import dev.daniza.draflix.network.model.ResponseSearchList
 import dev.daniza.draflix.network.model.ResponseSingle
 import dev.daniza.draflix.network.model.responseParsing
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,7 +29,7 @@ class OMDBServiceTest {
 
     @Test
     fun should_get_success_response() = runTest {
-        val response = service.getMovieDetail(id = "tt3896198")
+        val response = service.getMovies(id = "tt3896198")
         advanceUntilIdle()
         assertTrue(response.isSuccessful)
         assertThat(response.code(), `is`(200))
@@ -37,15 +39,15 @@ class OMDBServiceTest {
     fun should_get_error_response() = runTest {
         omdbKeyInterceptor = OMDBKeyInterceptor(keyAccess = fakeKeyAccess)
         service = OMDBService.create(omdbKeyInterceptor)
-        val response = service.getMovieDetail(id = "tt3896198")
+        val response = service.getMovies(id = "tt3896198")
         advanceUntilIdle()
         assertFalse(response.isSuccessful)
         assertThat(response.code(), `is`(401))
     }
 
     @Test
-    fun given_rightId_when_getMovieDetail_then_returnResponseSingle() = runTest {
-        val response = service.getMovieDetail(id = "tt3896198")
+    fun given_rightId_when_getMovies_then_returnResponseSingle() = runTest {
+        val response = service.getMovies(id = "tt3896198")
         advanceUntilIdle()
         assertTrue(response.isSuccessful)
         assertThat(response.code(), `is`(200))
@@ -56,8 +58,8 @@ class OMDBServiceTest {
     }
 
     @Test
-    fun given_wrongId_when_getMovieDetail_then_returnResponseError() = runTest {
-        val response = service.getMovieDetail(id = "wrong_id")
+    fun given_wrongId_when_getMovies_then_returnResponseError() = runTest {
+        val response = service.getMovies(id = "wrong_id")
         advanceUntilIdle()
         assertTrue(response.isSuccessful)
         assertThat(response.code(), `is`(200))
@@ -68,8 +70,8 @@ class OMDBServiceTest {
     }
 
     @Test
-    fun given_rightId_when_getMovieDetail_then_returnResponseSameAsDummy() = runTest {
-        val response = service.getMovieDetail(id = "tt3896198")
+    fun given_rightId_when_getMovies_then_returnResponseSameAsDummy() = runTest {
+        val response = service.getMovies(id = "tt3896198")
         advanceUntilIdle()
         assertTrue(response.isSuccessful)
         assertThat(response.code(), `is`(200))
@@ -82,5 +84,48 @@ class OMDBServiceTest {
         val dummy = ClassLoader.getSystemResource("movie_single.json").readText()
         val parsedDummy = Gson().fromJson(dummy, ResponseSingle::class.java)
         assertThat(result.getOrNull(), `is`(parsedDummy))
+    }
+
+    @Test
+    fun given_wrongId_when_getMovies_then_returnResponseSameAsErrorDummy() = runTest {
+        val response = service.getMovies(id = "wrong_id")
+        advanceUntilIdle()
+        assertTrue(response.isSuccessful)
+        assertThat(response.code(), `is`(200))
+
+        val result = responseParsing(response, ResponseSingle::class.java)
+        assertThat(result.isFailure, `is`(true))
+        assertThat(result.exceptionOrNull()?.message, `is`("Incorrect IMDb ID."))
+
+        val dummy = ClassLoader.getSystemResource("movie_unknown.json").readText()
+        val parsedDummy = Gson().fromJson(dummy, JsonObject::class.java)
+        assertThat(response.body()?.asJsonObject, `is`(parsedDummy.asJsonObject))
+    }
+
+    @Test
+    fun given_searchAvengers_when_getMovies_then_returnResponseSameAsDummy() = runTest {
+        val response = service.getMovies(search = "avengers", page = 1)
+        advanceUntilIdle()
+        assertTrue(response.isSuccessful)
+        assertThat(response.code(), `is`(200))
+
+        val result = responseParsing(response, ResponseSearchList::class.java)
+        assertThat(result.isSuccess, `is`(true))
+
+        val dummy = ClassLoader.getSystemResource("movie_list.json").readText()
+        val parsedDummy = Gson().fromJson(dummy, ResponseSearchList::class.java)
+        assertThat(result.getOrNull(), `is`(parsedDummy))
+    }
+
+    @Test
+    fun given_searchUnknown_when_getMovies_then_returnResponseMovieNotFound() = runTest {
+        val response = service.getMovies(search = "abogoboga", page = 1)
+        advanceUntilIdle()
+        assertTrue(response.isSuccessful)
+        assertThat(response.code(), `is`(200))
+
+        val result = responseParsing(response, ResponseSearchList::class.java)
+        assertThat(result.isFailure, `is`(true))
+        assertThat(result.exceptionOrNull()?.message, `is`("Movie not found!"))
     }
 }
