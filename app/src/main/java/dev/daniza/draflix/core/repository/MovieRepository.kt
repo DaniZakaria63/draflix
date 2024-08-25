@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 interface MovieRepository {
-    suspend fun getMovies(query: String): Flow<PagingData<ResponseSearchListItem>>
+    fun getMovies(query: String): Flow<PagingData<ResponseSearchListItem>>
 }
 
 @OptIn(ExperimentalPagingApi::class)
@@ -23,7 +23,7 @@ class MovieRepositoryImpl @Inject constructor(
     private val remoteKeysDao: RemoteKeysDao,
     private val searchDao: SearchDao,
 ) : MovieRepository {
-    override suspend fun getMovies(query: String): Flow<PagingData<ResponseSearchListItem>> {
+    override fun getMovies(query: String): Flow<PagingData<ResponseSearchListItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
