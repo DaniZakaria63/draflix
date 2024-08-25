@@ -28,6 +28,7 @@ sealed class DraflixDestination(
             type = NavType.StringType
         })
     ) {
+        const val paramName = "movieId"
         fun createRoute(movieId: String) = "detail/$movieId"
     }
 }
