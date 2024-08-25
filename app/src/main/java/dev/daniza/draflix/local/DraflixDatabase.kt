@@ -1,11 +1,26 @@
 package dev.daniza.draflix.local
 
 import android.content.Context
+import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import dev.daniza.draflix.local.dao.MovieDao
+import dev.daniza.draflix.local.dao.RemoteKeysDao
+import dev.daniza.draflix.local.dao.SearchDao
+import dev.daniza.draflix.local.entity.MovieEntity
+import dev.daniza.draflix.local.entity.RemoteKeysEntity
+import dev.daniza.draflix.local.entity.SearchEntity
 import dev.daniza.draflix.utilities.LOCAL_DATABASE_NAME
 
+@Database(
+    entities = [MovieEntity::class, SearchEntity::class, RemoteKeysEntity::class],
+    version = 2
+)
 abstract class DraflixDatabase : RoomDatabase() {
+    abstract fun movieDao(): MovieDao
+    abstract fun searchDao(): SearchDao
+    abstract fun remoteKeysDao(): RemoteKeysDao
+
     companion object {
 
         // For Singleton instantiation
