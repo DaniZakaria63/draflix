@@ -13,6 +13,8 @@ import dev.daniza.draflix.network.OMDBService
 import dev.daniza.draflix.network.model.ResponseSearchListItem
 import dev.daniza.draflix.network.model.ResponseSingle
 import dev.daniza.draflix.network.model.responseParsing
+import dev.daniza.draflix.utilities.DEFAULT_QUERY_TITLE
+import dev.daniza.draflix.utilities.DEFAULT_QUERY_TYPE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,7 +24,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 interface MovieRepository {
-    fun getMovies(query: String): Flow<PagingData<ResponseSearchListItem>>
+    fun getMovies(type: String, title: String): Flow<PagingData<ResponseSearchListItem>>
     suspend fun getMovieDetail(id: String): Result<ResponseSingle>
 }
 
@@ -33,19 +35,23 @@ class MovieRepositoryImpl @Inject constructor(
     private val searchDao: SearchDao,
     private val movieDao: MovieDao
 ) : MovieRepository {
-    override fun getMovies(query: String): Flow<PagingData<ResponseSearchListItem>> {
+    override fun getMovies(type: String, title: String): Flow<PagingData<ResponseSearchListItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
                 enablePlaceholders = false
             ),
             pagingSourceFactory = {
-                searchDao.getAll()
+                searchDao.getSearchByQuery(
+                    type = DEFAULT_QUERY_TYPE,
+                    title = DEFAULT_QUERY_TITLE
+                )
             },
             remoteMediator = MovieRemoteMediator(
                 OMDBService,
                 remoteKeysDao,
-                searchDao
+                searchDao,
+                Pair(type, title)
             )
         ).flow.map { pagingdata ->
             pagingdata.map {
