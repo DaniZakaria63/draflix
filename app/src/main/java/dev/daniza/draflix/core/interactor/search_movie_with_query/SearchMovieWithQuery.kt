@@ -6,5 +6,5 @@ import javax.inject.Inject
 class SearchMovieWithQuery @Inject constructor(
     private val movieRepository: MovieRepository
 ) {
-    operator fun invoke(query: String) = movieRepository.getMovies(query)
+    operator fun invoke(type: String, title: String) = movieRepository.getMovies(type, title)
 }

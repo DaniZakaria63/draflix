@@ -11,6 +11,10 @@ import dev.daniza.draflix.local.entity.SearchEntity
 import dev.daniza.draflix.network.OMDBService
 import dev.daniza.draflix.network.model.ResponseSearchList
 import dev.daniza.draflix.network.model.responseParsing
+import dev.daniza.draflix.utilities.DEFAULT_QUERY_TITLE
+import dev.daniza.draflix.utilities.DEFAULT_QUERY_TYPE
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okio.IOException
 import retrofit2.HttpException
 import java.util.concurrent.TimeUnit
@@ -19,12 +23,13 @@ import java.util.concurrent.TimeUnit
 class MovieRemoteMediator(
     private val OMDBService: OMDBService,
     private val remoteKeysDao: RemoteKeysDao,
-    private val searchDao: SearchDao
+    private val searchDao: SearchDao,
+    private val query: Pair<String, String>? = Pair(DEFAULT_QUERY_TYPE, DEFAULT_QUERY_TITLE),
 ) : RemoteMediator<Int, SearchEntity>() {
     private val STARTING_PAGE_INDEX: Int = 1
 
     override suspend fun initialize(): InitializeAction {
-        // SHOULD CHECK THE CONNECTION
+        // TODO: SHOULD CHECK THE CONNECTION
         val cacheTimeout = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
         return if (System.currentTimeMillis() - (remoteKeysDao.getCreationTime()
                 ?: 0) < cacheTimeout
@@ -61,13 +66,21 @@ class MovieRemoteMediator(
         }
 
         try {
-            val response = OMDBService.getMovies(page = page)
+            val response = withContext(Dispatchers.IO) {
+                OMDBService.getMovies(
+                    type = query?.first.orEmpty(),
+                    title = query?.second.orEmpty(),
+                    page = page,
+                )
+            }
             val result = responseParsing(response, ResponseSearchList::class.java)
             if (result.isSuccess) {
                 val movies = result.getOrNull()?.Search.orEmpty()
                 if (loadType == LoadType.REFRESH) {
-                    remoteKeysDao.clearRemoteKeys()
-                    searchDao.clearSearch()
+                    withContext(Dispatchers.IO) {
+                        remoteKeysDao.clearRemoteKeys()
+                        searchDao.clearSearch()
+                    }
                 }
                 val prefKey = if (page == STARTING_PAGE_INDEX) null else page - 1
                 val nextKey = if (movies.isEmpty()) null else page + 1
@@ -79,16 +92,18 @@ class MovieRemoteMediator(
                         nextKey = nextKey
                     )
                 }
-                remoteKeysDao.insertAll(remoteKeys)
-                searchDao.insertAll(movies.map {
-                    SearchEntity(
-                        id = it.imdbID?.ifEmpty { "-" }.toString(),
-                        title = it.Title?.ifEmpty { "-" }.toString(),
-                        year = it.Year?.ifEmpty { "-" }.toString(),
-                        type = it.Type?.ifEmpty { "-" }.toString(),
-                        poster = it.Poster.orEmpty()
-                    )
-                })
+                withContext(Dispatchers.IO) {
+                    remoteKeysDao.insertAll(remoteKeys)
+                    searchDao.insertAll(movies.map {
+                        SearchEntity(
+                            id = it.imdbID?.ifEmpty { "-" }.toString(),
+                            title = it.Title?.ifEmpty { "-" }.toString(),
+                            year = it.Year?.ifEmpty { "-" }.toString(),
+                            type = it.Type?.ifEmpty { "-" }.toString(),
+                            poster = it.Poster.orEmpty()
+                        )
+                    })
+                }
                 return MediatorResult.Success(endOfPaginationReached = movies.isEmpty())
             } else {
                 return MediatorResult.Error(
@@ -105,9 +120,11 @@ class MovieRemoteMediator(
     private suspend fun getRemoteKeyClosestToCurrentPosition(
         state: PagingState<Int, SearchEntity>
     ): RemoteKeysEntity? {
-        return state.anchorPosition?.let { position ->
-            state.closestItemToPosition(position)?.id?.let { id ->
-                remoteKeysDao.getRemoteKeyByMovieId(id)
+        return withContext(Dispatchers.IO) {
+            state.anchorPosition?.let { position ->
+                state.closestItemToPosition(position)?.id?.let { id ->
+                    remoteKeysDao.getRemoteKeyByMovieId(id)
+                }
             }
         }
     }
@@ -115,20 +132,24 @@ class MovieRemoteMediator(
     private suspend fun getRemoteKeyForFirstItem(
         state: PagingState<Int, SearchEntity>
     ): RemoteKeysEntity? {
-        return state.pages.firstOrNull {
-            it.data.isNotEmpty()
-        }?.data?.firstOrNull()?.let { movie ->
-            remoteKeysDao.getRemoteKeyByMovieId(movie.id)
+        return withContext(Dispatchers.IO) {
+            state.pages.firstOrNull {
+                it.data.isNotEmpty()
+            }?.data?.firstOrNull()?.let { movie ->
+                remoteKeysDao.getRemoteKeyByMovieId(movie.id)
+            }
         }
     }
 
     private suspend fun getRemoteKeyForLastItem(
         state: PagingState<Int, SearchEntity>
     ): RemoteKeysEntity? {
-        return state.pages.lastOrNull {
-            it.data.isNotEmpty()
-        }?.data?.lastOrNull()?.let { movie ->
-            remoteKeysDao.getRemoteKeyByMovieId(movie.id)
+        return withContext(Dispatchers.IO) {
+            state.pages.lastOrNull {
+                it.data.isNotEmpty()
+            }?.data?.lastOrNull()?.let { movie ->
+                remoteKeysDao.getRemoteKeyByMovieId(movie.id)
+            }
         }
     }
 }
