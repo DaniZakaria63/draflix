@@ -23,13 +23,15 @@ class SearchViewModel @Inject constructor(
         MutableStateFlow(PagingData.empty())
     val movieListState: StateFlow<PagingData<ResponseSearchListItem>> get() = _movieList
 
-    init {
-        searchMovies()
-    }
-
-    fun searchMovies() {
+    fun searchMovies(
+        type: String = DEFAULT_QUERY_TYPE,
+        title: String = DEFAULT_QUERY_TITLE
+    ) {
         viewModelScope.launch {
-            searchMovieWithQuery(DEFAULT_QUERY_TYPE, DEFAULT_QUERY_TITLE)
+            searchMovieWithQuery(
+                type.ifEmpty { DEFAULT_QUERY_TYPE },
+                title.ifEmpty { DEFAULT_QUERY_TITLE }
+            )
                 .distinctUntilChanged()
                 .cachedIn(viewModelScope)
                 .collect { _movieList.value = it }
