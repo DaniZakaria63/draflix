@@ -5,5 +5,5 @@ sealed class HomeListState {
     object NoData : HomeListState()
     object NoInternet : HomeListState()
     object Success : HomeListState()
-    data class Error(val message: String) : HomeListState()
+    object Error : HomeListState()
 }

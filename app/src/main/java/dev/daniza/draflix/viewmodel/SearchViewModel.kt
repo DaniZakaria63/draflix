@@ -37,6 +37,7 @@ class SearchViewModel @Inject constructor(
         title: String = DEFAULT_QUERY_TITLE
     ) {
         viewModelScope.launch {
+            _requestState.emit(HomeListState.Loading)
             searchMovieWithQuery(
                 type.ifEmpty { DEFAULT_QUERY_TYPE },
                 title.ifEmpty { DEFAULT_QUERY_TITLE }
@@ -44,7 +45,7 @@ class SearchViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .cachedIn(viewModelScope)
                 .catch {
-                    _requestState.emit(HomeListState.Error(it.message.orEmpty()))
+                    _requestState.emit(HomeListState.Error)
                 }
                 .collect {
                     _movieList.value = it

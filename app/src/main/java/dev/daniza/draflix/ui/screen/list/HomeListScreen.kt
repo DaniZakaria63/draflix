@@ -2,12 +2,11 @@ package dev.daniza.draflix.ui.screen.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -45,10 +44,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import dev.daniza.draflix.network.model.ResponseSearchListItem
+import dev.daniza.draflix.ui.screen.component.ErrorScreen
 import dev.daniza.draflix.ui.screen.component.LoadingItemRectangle
 import dev.daniza.draflix.utilities.ConnectionState
 import dev.daniza.draflix.utilities.DEFAULT_PARAM_TYPE
@@ -85,6 +86,7 @@ fun HomeListScreen(
             val state = when {
                 hasInternet && hasData -> HomeListState.Success
                 hasInternet && !hasData -> HomeListState.NoData
+                moviesPagingItems.loadState.append is LoadState.Error -> HomeListState.Error
                 else -> HomeListState.NoInternet
             }
             viewModel.setState(state)
@@ -97,84 +99,75 @@ fun HomeListScreen(
             DraflixTopBar()
         },
     ) { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        if (requestState is HomeListState.NoInternet) {
+            ListNoInternetScreen()
+        }
+
+        if (moviesPagingItems.loadState.refresh is LoadState.Error) {
+            ErrorScreen {
+                searchCoroutineScope.launch {
+                    moviesPagingItems.retry()
+                }
+            }
+        }
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
         ) {
-            when (requestState) {
-                is HomeListState.Error -> {}
-                is HomeListState.NoData -> {}
-                is HomeListState.NoInternet -> {}
-                else -> ListLoadingScreen(showShimmer = showShimmer)
+            item(span = { GridItemSpan(2) }) {
+                Text(text = "Search")
             }
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surface)
-            ) {
-                item(span = { GridItemSpan(2) }) {
-                    Text(text = "Search")
-                }
+            item(span = { GridItemSpan(2) }) {
+                SearchTextField(
+                    value = searchedTitleText,
+                    onValueChange = { searchedTitleText = it },
+                )
+            }
 
-                item(span = { GridItemSpan(2) }) {
-                    SearchTextField(
-                        value = searchedTitleText,
-                        onValueChange = { searchedTitleText = it },
-                    )
-                }
-
-                item(span = { GridItemSpan(2) }) {
-                    Row(modifier = Modifier.padding(8.dp)) {
-                        DEFAULT_PARAM_TYPE.forEach { type ->
-                            MovieTypeTab(
-                                text = type,
-                                selected = searchedTypeText == type,
-                                onSelect = {
-                                    searchedTypeText = type
-                                }
-                            )
-                        }
-                    }
-                }
-
-                items(moviesPagingItems.itemCount) { index ->
-                    moviesPagingItems[index]?.let {
-                        MovieItemCard(
-                            movie = it,
-                            onMovieClick = onMovieClick
+            item(span = { GridItemSpan(2) }) {
+                Row(modifier = Modifier.padding(8.dp)) {
+                    DEFAULT_PARAM_TYPE.forEach { type ->
+                        MovieTypeTab(
+                            text = type,
+                            selected = searchedTypeText == type,
+                            onSelect = {
+                                searchedTypeText = type
+                            }
                         )
                     }
                 }
+            }
 
-
-                /*
-                val loadState = moviesPagingItems.loadState
-                item(span = { GridItemSpan(2) }) {
-                    when {
-                        loadState.refresh is LoadState.Loading -> {
-                            Text(text = "Loading In Refresh")
-                        }
-
-                        loadState.refresh is LoadState.Error -> {
-                            Text(text = "Error happened In Refresh")
-                        }
-
-                        loadState.append is LoadState.Loading -> {
-                            Text(text = "Loading In Append")
-                        }
-
-                        loadState.append is LoadState.Error -> {
-                            Text(text = "Error happened In Append")
-                        }
-                    }
+            if (moviesPagingItems.loadState.refresh is LoadState.Loading) {
+                items(10) {
+                    ListLoadingScreen(showShimmer = showShimmer)
                 }
-                */
+            }
+
+            items(moviesPagingItems.itemCount) { index ->
+                moviesPagingItems[index]?.let {
+                    MovieItemCard(
+                        movie = it,
+                        onMovieClick = onMovieClick
+                    )
+                } ?: ListNoDataScreen()
             }
         }
+    }
+}
+
+@Composable
+fun ListNoDataScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Pencarian Tidak Ditemukan")
     }
 }
 
@@ -186,14 +179,27 @@ fun ListLoadingScreen(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Column {
-            repeat(10) {
-                LoadingItemRectangle(
-                    showShimmer = showShimmer,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                )
-            }
-        }
+        LoadingItemRectangle(
+            showShimmer = showShimmer,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+        )
+    }
+}
+
+@Composable
+fun ListNoInternetScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(125.dp)
+            .background(MaterialTheme.colorScheme.error),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "No Internet Connection",
+            color = MaterialTheme.colorScheme.onError
+
+        )
     }
 }
 
@@ -291,7 +297,7 @@ fun DraflixTopBar() {
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
         scrollBehavior = scrollBehavior
     )
