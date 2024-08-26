@@ -3,6 +3,7 @@ package dev.daniza.draflix.ui.screen.list
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -267,7 +268,7 @@ fun MovieItemCard(
             .padding(12.dp),
         elevation = CardDefaults.cardElevation(5.dp),
     ) {
-        Box(
+        Column(
             modifier = modifier
                 .fillMaxSize()
                 .clickable {
@@ -301,8 +302,14 @@ fun MovieItemCard(
             }
 
             Text(
-                text = movie.Title.orEmpty(),
-                color = MaterialTheme.colorScheme.error
+                text = "${movie.Title.orEmpty()} (${movie.Year.orEmpty()})",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(all = 8.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = 4.dp)
             )
         }
     }
