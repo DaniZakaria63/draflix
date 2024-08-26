@@ -29,6 +29,7 @@ class MovieRemoteMediator(
     private val STARTING_PAGE_INDEX: Int = 1
 
     override suspend fun initialize(): InitializeAction {
+        return InitializeAction.LAUNCH_INITIAL_REFRESH
         // TODO: SHOULD CHECK THE CONNECTION
         val cacheTimeout = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
         return if (System.currentTimeMillis() - (remoteKeysDao.getCreationTime()
@@ -69,7 +70,7 @@ class MovieRemoteMediator(
             val response = withContext(Dispatchers.IO) {
                 OMDBService.getMovies(
                     type = query?.first.orEmpty(),
-                    title = query?.second.orEmpty(),
+                    search = query?.second.orEmpty(),
                     page = page,
                 )
             }
