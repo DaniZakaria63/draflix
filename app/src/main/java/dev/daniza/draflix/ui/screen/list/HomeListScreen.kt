@@ -250,48 +250,6 @@ fun SearchTextField(
             .fillMaxWidth()
             .padding(vertical = 12.dp)
     )
-    /*
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .then(modifier)
-            .height(42.dp)
-            .fillMaxWidth()
-            .shadow(elevation = 4.dp, shape = RoundedCornerShape(8.dp))
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(8.dp)
-            ),
-    ) {
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            textStyle = TextStyle(
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            ),
-            decorationBox = { innerTextField ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "search.icon",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .size(30.dp)
-                    )
-                    innerTextField()
-                }
-            },
-            singleLine = true,
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 12.dp)
-        )
-    }*/
 }
 
 @Composable
