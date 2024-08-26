@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -24,9 +27,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -41,12 +43,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -125,13 +133,24 @@ fun HomeListScreen(
                 .background(MaterialTheme.colorScheme.surface)
         ) {
             item(span = { GridItemSpan(2) }) {
-                Text(text = "Search")
+                Text(
+                    text = "Find Movies, TV Series, and more...",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .padding(
+                            top = 16.dp
+                        )
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             item(span = { GridItemSpan(2) }) {
                 SearchTextField(
                     value = searchedTitleText,
                     onValueChange = { searchedTitleText = it },
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp)
                 )
             }
 
@@ -215,19 +234,63 @@ fun SearchTextField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TextField(
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .then(modifier)
+            .height(42.dp)
+            .fillMaxWidth()
+            .shadow(elevation = 4.dp, shape = RoundedCornerShape(8.dp))
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(8.dp)
+            ),
+    ) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            textStyle = TextStyle(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            ),
+            decorationBox = { innerTextField ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "search.icon",
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp)
+                            .size(30.dp)
+                    )
+                    if (value.isEmpty()) {
+                        Text(
+                            text = "Cari judul film",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    innerTextField()
+                }
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Search
+            ),
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 12.dp)
+        )
+    }
+    /*BasicTextField(
         value = value,
         onValueChange = onValueChange,
         textStyle = MaterialTheme.typography.bodyMedium,
-        label = { Text(text = "Search") },
-        placeholder = { Text(text = "Cari judul film...") },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                contentDescription = "search.icon"
-            )
-        },
+
         colors = TextFieldDefaults.colors(
             focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -235,8 +298,8 @@ fun SearchTextField(
         singleLine = true,
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp)
-    )
+            .padding(vertical = 8.dp, horizontal = 12.dp)
+    )*/
 }
 
 @Composable
@@ -245,15 +308,21 @@ fun MovieTypeTab(
     selected: Boolean,
     onSelect: () -> Unit,
 ) {
-    Text(
-        text = text,
-        modifier = Modifier
-            .background(
-                color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
-            )
-            .clickable(onClick = onSelect)
-            .padding(16.dp)
-    )
+    Surface(
+        modifier = Modifier.padding(end = 12.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
+    ) {
+        Text(
+            text = text,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .clickable(onClick = onSelect)
+                .padding(horizontal = 8.dp, vertical = 6.dp)
+        )
+    }
 }
 
 @Composable
@@ -321,7 +390,12 @@ fun DraflixTopBar() {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     CenterAlignedTopAppBar(
         title = {
-            Text(text = "Draflix")
+            Text(
+                text = "Draflix",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,

@@ -84,6 +84,7 @@ fun DetailMovieScreen(
             .verticalScroll(scrollState)
             .fillMaxSize()
             .padding(12.dp)
+            .padding(top = 32.dp)
     ) {
         SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
@@ -122,7 +123,8 @@ fun DetailMovieScreen(
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = data.Title.orEmpty(),
@@ -140,6 +142,7 @@ fun DetailMovieScreen(
                     .fillMaxWidth()
                     .padding(end = 8.dp)
             ) {
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = data.Actors.orEmpty(),
                     color = MaterialTheme.colorScheme.onSurface,
