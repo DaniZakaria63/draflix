@@ -48,6 +48,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import dev.daniza.draflix.network.model.ResponseSearchListItem
 import dev.daniza.draflix.utilities.DEFAULT_PARAM_TYPE
+import dev.daniza.draflix.utilities.connectivityState
 import dev.daniza.draflix.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
 
@@ -61,6 +62,7 @@ fun HomeListScreen(
     val searchCoroutineScope = rememberCoroutineScope()
     var searchedTitleText by remember { mutableStateOf("") }
     var searchedTypeText by remember { mutableStateOf(DEFAULT_PARAM_TYPE.first()) }
+    val connectionStatus by connectivityState()
 
     LaunchedEffect(key1 = searchedTitleText, key2 = searchedTypeText) {
         searchCoroutineScope.launch {
