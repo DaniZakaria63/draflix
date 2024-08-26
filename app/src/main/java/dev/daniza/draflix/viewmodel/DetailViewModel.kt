@@ -6,10 +6,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.daniza.draflix.core.interactor.get_movie_by_id.GetMovieById
 import dev.daniza.draflix.network.model.ResponseSingle
 import dev.daniza.draflix.ui.screen.detail.DetailUiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,11 +24,11 @@ class DetailViewModel @Inject constructor(
 
     fun getMovieDetail(id: String) {
         viewModelScope.launch {
-            val result = getMovieById(id)
+            val result = withContext(Dispatchers.IO) { getMovieById(id) }
             if (result.isSuccess) {
                 _movieState.emit(DetailUiState.Success(result.getOrDefault(ResponseSingle())))
             } else {
-                _movieState.emit(DetailUiState.Error)
+                _movieState.emit(DetailUiState.Error(result.exceptionOrNull()?.message.orEmpty()))
             }
         }
     }

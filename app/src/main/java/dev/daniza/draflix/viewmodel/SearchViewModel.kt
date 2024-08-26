@@ -10,6 +10,7 @@ import dev.daniza.draflix.network.model.ResponseSearchListItem
 import dev.daniza.draflix.ui.screen.list.HomeListState
 import dev.daniza.draflix.utilities.DEFAULT_QUERY_TITLE
 import dev.daniza.draflix.utilities.DEFAULT_QUERY_TYPE
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,10 +40,12 @@ class SearchViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             _requestState.emit(HomeListState.Loading)
-            searchMovieWithQuery(
-                type.ifEmpty { DEFAULT_QUERY_TYPE },
-                title.ifEmpty { DEFAULT_QUERY_TITLE }
-            )
+            withContext(Dispatchers.IO) {
+                searchMovieWithQuery(
+                    type.ifEmpty { DEFAULT_QUERY_TYPE },
+                    title.ifEmpty { DEFAULT_QUERY_TITLE }
+                )
+            }
                 .distinctUntilChanged()
                 .cachedIn(viewModelScope)
                 .catch {

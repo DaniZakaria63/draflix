@@ -43,8 +43,8 @@ class MovieRepositoryImpl @Inject constructor(
             ),
             pagingSourceFactory = {
                 searchDao.getSearchByQuery(
-                    type = DEFAULT_QUERY_TYPE,
-                    title = DEFAULT_QUERY_TITLE
+                    type = type.ifEmpty { DEFAULT_QUERY_TYPE },
+                    title = title.ifEmpty { DEFAULT_QUERY_TITLE }
                 )
             },
             remoteMediator = MovieRemoteMediator(
@@ -66,7 +66,23 @@ class MovieRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getMovieDetail(id: String): Result<ResponseSingle> {
-        // TODO: CHECK FOR CONNECTION FIRST
+        val movie = movieDao.getMovieById(id)
+        if (movie != null) return Result.success(
+            ResponseSingle(
+                imdbID = movie.id,
+                Title = movie.title,
+                Year = movie.year,
+                Released = movie.released,
+                Runtime = movie.runtime,
+                Genre = movie.genre,
+                Poster = movie.poster,
+                Director = movie.director,
+                Writer = movie.writer,
+                Actors = movie.actor,
+                Plot = movie.plot,
+                imdbRating = movie.rating
+            )
+        )
         return try {
             val response = withContext(Dispatchers.IO) {
                 OMDBService.getMovies(id = id)

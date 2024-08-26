@@ -30,7 +30,7 @@ class MovieRemoteMediator(
 
     override suspend fun initialize(): InitializeAction {
         return InitializeAction.LAUNCH_INITIAL_REFRESH
-        // TODO: SHOULD CHECK THE CONNECTION
+
         val cacheTimeout = TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)
         return if (System.currentTimeMillis() - (remoteKeysDao.getCreationTime()
                 ?: 0) < cacheTimeout
