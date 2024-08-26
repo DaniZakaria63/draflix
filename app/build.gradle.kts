@@ -70,7 +70,7 @@ dependencies {
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.room.paging)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.glide)
+    implementation(libs.coil)
     implementation(libs.material)
     implementation(libs.okhttp3.logging.interceptor)
     implementation(libs.retrofit2)

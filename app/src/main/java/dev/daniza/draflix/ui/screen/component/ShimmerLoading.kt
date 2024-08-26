@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LoadingItemRectangle(
     showShimmer: Boolean,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(visible = showShimmer, modifier = modifier) {
         Box(

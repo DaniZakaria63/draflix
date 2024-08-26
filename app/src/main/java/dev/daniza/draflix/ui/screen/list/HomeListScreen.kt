@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,14 +41,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
+import dev.daniza.draflix.R
 import dev.daniza.draflix.network.model.ResponseSearchListItem
 import dev.daniza.draflix.ui.screen.component.ErrorScreen
 import dev.daniza.draflix.ui.screen.component.LoadingItemRectangle
@@ -250,7 +255,6 @@ fun MovieTypeTab(
     )
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MovieItemCard(
     movie: ResponseSearchListItem,
@@ -270,14 +274,31 @@ fun MovieItemCard(
                     onMovieClick(movie.imdbID.orEmpty())
                 }
         ) {
-            GlideImage(
+            SubcomposeAsyncImage(
                 model = movie.Poster.orEmpty(),
                 contentDescription = "picture of movie-${movie.imdbID}",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(5.dp))
-            )
+                    .defaultMinSize(minHeight = 50.dp)
+            ) {
+                val state = painter.state
+                when (state) {
+                    is AsyncImagePainter.State.Loading -> {
+                        LoadingItemRectangle(
+                            showShimmer = true,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    is AsyncImagePainter.State.Error -> {
+                        ImageBitmap.imageResource(id = R.drawable.img_error)
+                    }
+
+                    else -> SubcomposeAsyncImageContent()
+                }
+            }
 
             Text(
                 text = movie.Title.orEmpty(),
