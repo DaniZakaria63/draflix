@@ -1,12 +1,11 @@
 package dev.daniza.draflix.ui.screen
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dev.daniza.draflix.ui.screen.detail.DetailScreen
 import dev.daniza.draflix.ui.screen.list.HomeListScreen
 
 @Composable
@@ -34,8 +33,7 @@ fun DraflixNavHost(
             arguments = DraflixDestination.Detail.navArguments
         ) {
             val movieId = it.arguments?.getString(DraflixDestination.Detail.paramName)
-            Toast.makeText(LocalContext.current, "THE MOVIE ID IS $movieId", Toast.LENGTH_SHORT)
-                .show()
+            DetailScreen(movieId = movieId.orEmpty())
         }
     }
 }
