@@ -30,6 +30,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,13 +42,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import dev.daniza.draflix.network.model.ResponseSearchListItem
+import dev.daniza.draflix.ui.screen.component.LoadingItemRectangle
+import dev.daniza.draflix.utilities.ConnectionState
 import dev.daniza.draflix.utilities.DEFAULT_PARAM_TYPE
 import dev.daniza.draflix.utilities.connectivityState
 import dev.daniza.draflix.viewmodel.SearchViewModel
@@ -59,14 +63,31 @@ fun HomeListScreen(
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val moviesPagingItems = viewModel.movieListState.collectAsLazyPagingItems()
+    val requestState by viewModel.requestState.collectAsState(initial = HomeListState.Loading)
     val searchCoroutineScope = rememberCoroutineScope()
     var searchedTitleText by remember { mutableStateOf("") }
     var searchedTypeText by remember { mutableStateOf(DEFAULT_PARAM_TYPE.first()) }
     val connectionStatus by connectivityState()
+    val showShimmer by remember {
+        derivedStateOf { requestState is HomeListState.Loading }
+    }
 
     LaunchedEffect(key1 = searchedTitleText, key2 = searchedTypeText) {
         searchCoroutineScope.launch {
             viewModel.searchMovies(searchedTypeText, searchedTitleText)
+        }
+    }
+
+    LaunchedEffect(key1 = connectionStatus) {
+        searchCoroutineScope.launch {
+            val hasInternet = connectionStatus == ConnectionState.Available
+            val hasData = moviesPagingItems.itemCount > 0
+            val state = when {
+                hasInternet && hasData -> HomeListState.Success
+                hasInternet && !hasData -> HomeListState.NoData
+                else -> HomeListState.NoInternet
+            }
+            viewModel.setState(state)
         }
     }
 
@@ -81,6 +102,13 @@ fun HomeListScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            when (requestState) {
+                is HomeListState.Error -> {}
+                is HomeListState.NoData -> {}
+                is HomeListState.NoInternet -> {}
+                else -> ListLoadingScreen(showShimmer = showShimmer)
+            }
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
@@ -122,6 +150,8 @@ fun HomeListScreen(
                     }
                 }
 
+
+                /*
                 val loadState = moviesPagingItems.loadState
                 item(span = { GridItemSpan(2) }) {
                     when {
@@ -142,6 +172,26 @@ fun HomeListScreen(
                         }
                     }
                 }
+                */
+            }
+        }
+    }
+}
+
+@Composable
+fun ListLoadingScreen(
+    showShimmer: Boolean
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column {
+            repeat(10) {
+                LoadingItemRectangle(
+                    showShimmer = showShimmer,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
             }
         }
     }
@@ -245,4 +295,10 @@ fun DraflixTopBar() {
         ),
         scrollBehavior = scrollBehavior
     )
+}
+
+@Preview
+@Composable
+fun ShimmerLoadingPreview() {
+    ListLoadingScreen(showShimmer = true)
 }
