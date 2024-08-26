@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,17 +14,22 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,6 +47,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import dev.daniza.draflix.network.model.ResponseSearchListItem
+import dev.daniza.draflix.utilities.DEFAULT_PARAM_TYPE
 import dev.daniza.draflix.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
 
@@ -50,10 +58,14 @@ fun HomeListScreen(
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val moviesPagingItems = viewModel.movieListState.collectAsLazyPagingItems()
-    var searchCoroutineScope = rememberCoroutineScope()
-    var searchedTitleText by remember { mutableStateOf("Cari judul film...") }
-    var searchedTypeText by remember {
-        mutableStateOf(false)
+    val searchCoroutineScope = rememberCoroutineScope()
+    var searchedTitleText by remember { mutableStateOf("") }
+    var searchedTypeText by remember { mutableStateOf(DEFAULT_PARAM_TYPE.first()) }
+
+    LaunchedEffect(key1 = searchedTitleText, key2 = searchedTypeText) {
+        searchCoroutineScope.launch {
+            viewModel.searchMovies(searchedTypeText, searchedTitleText)
+        }
     }
 
     Scaffold(
@@ -75,18 +87,28 @@ fun HomeListScreen(
                     .background(MaterialTheme.colorScheme.surface)
             ) {
                 item(span = { GridItemSpan(2) }) {
-                    BasicTextField(
+                    Text(text = "Search")
+                }
+
+                item(span = { GridItemSpan(2) }) {
+                    SearchTextField(
                         value = searchedTitleText,
-                        onValueChange = {
-                            searchedTitleText = it
-                            searchCoroutineScope.launch {
-                                viewModel.searchMovies()
-                            }
-                        },
-                        textStyle = MaterialTheme.typography.bodyMedium,
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        onValueChange = { searchedTitleText = it },
                     )
+                }
+
+                item(span = { GridItemSpan(2) }) {
+                    Row(modifier = Modifier.padding(8.dp)) {
+                        DEFAULT_PARAM_TYPE.forEach { type ->
+                            MovieTypeTab(
+                                text = type,
+                                selected = searchedTypeText == type,
+                                onSelect = {
+                                    searchedTypeText = type
+                                }
+                            )
+                        }
+                    }
                 }
 
                 items(moviesPagingItems.itemCount) { index ->
@@ -121,6 +143,53 @@ fun HomeListScreen(
             }
         }
     }
+}
+
+@Composable
+fun SearchTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        textStyle = MaterialTheme.typography.bodyMedium,
+        label = { Text(text = "Search") },
+        placeholder = { Text(text = "Cari judul film...") },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                contentDescription = "search.icon"
+            )
+        },
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        singleLine = true,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+    )
+}
+
+@Composable
+fun MovieTypeTab(
+    text: String,
+    selected: Boolean,
+    onSelect: () -> Unit,
+) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .background(
+                color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+            )
+            .clickable(onClick = onSelect)
+            .padding(16.dp)
+    )
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
