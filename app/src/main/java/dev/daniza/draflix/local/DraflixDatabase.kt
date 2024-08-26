@@ -11,10 +11,11 @@ import dev.daniza.draflix.local.entity.MovieEntity
 import dev.daniza.draflix.local.entity.RemoteKeysEntity
 import dev.daniza.draflix.local.entity.SearchEntity
 import dev.daniza.draflix.utilities.LOCAL_DATABASE_NAME
+import dev.daniza.draflix.utilities.LOCAL_DATABASE_VERSION
 
 @Database(
     entities = [MovieEntity::class, SearchEntity::class, RemoteKeysEntity::class],
-    version = 2
+    version = LOCAL_DATABASE_VERSION
 )
 abstract class DraflixDatabase : RoomDatabase() {
     abstract fun movieDao(): MovieDao
@@ -35,6 +36,7 @@ abstract class DraflixDatabase : RoomDatabase() {
 
         private fun buildDatabase(context: Context): DraflixDatabase {
             return Room.databaseBuilder(context, DraflixDatabase::class.java, LOCAL_DATABASE_NAME)
+                .fallbackToDestructiveMigration()
                 .build()
         }
     }

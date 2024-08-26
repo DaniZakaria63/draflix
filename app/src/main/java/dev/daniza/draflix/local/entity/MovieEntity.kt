@@ -12,6 +12,7 @@ data class MovieEntity(
     @ColumnInfo(name = "released") val released: String = "",
     @ColumnInfo(name = "runtime") val runtime: String = "",
     @ColumnInfo(name = "genre") val genre: String = "",
+    @ColumnInfo(name = "poster") val poster: String = "",
     @ColumnInfo(name = "director") val director: String = "",
     @ColumnInfo(name = "writer") val writer: String = "",
     @ColumnInfo(name = "actor") val actor: String = "",

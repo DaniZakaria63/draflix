@@ -11,8 +11,8 @@ import dev.daniza.draflix.local.dao.RemoteKeysDao
 import dev.daniza.draflix.local.dao.SearchDao
 import javax.inject.Singleton
 
-@InstallIn(SingletonComponent::class)
 @Module
+@InstallIn(SingletonComponent::class)
 class LocalModule {
 
     @Singleton

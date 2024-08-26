@@ -28,7 +28,7 @@ interface OMDBService {
     companion object {
         fun create(baseUrl: String, keyAccessInterceptor: Interceptor): OMDBService {
             val logger = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BASIC
+                level = HttpLoggingInterceptor.Level.BODY
             }
 
             val client = OkHttpClient.Builder().apply {
