@@ -5,13 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -68,21 +67,6 @@ fun HomeListScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            BasicTextField(
-                value = searchedTitleText,
-                onValueChange = {
-                    searchedTitleText = it
-                    searchCoroutineScope.launch {
-                        viewModel.searchMovies()
-                    }
-                },
-                textStyle = MaterialTheme.typography.bodyMedium,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
@@ -90,6 +74,21 @@ fun HomeListScreen(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surface)
             ) {
+                item(span = { GridItemSpan(2) }) {
+                    BasicTextField(
+                        value = searchedTitleText,
+                        onValueChange = {
+                            searchedTitleText = it
+                            searchCoroutineScope.launch {
+                                viewModel.searchMovies()
+                            }
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium,
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 items(moviesPagingItems.itemCount) { index ->
                     moviesPagingItems[index]?.let {
                         MovieItemCard(
@@ -100,7 +99,7 @@ fun HomeListScreen(
                 }
 
                 val loadState = moviesPagingItems.loadState
-                item {
+                item(span = { GridItemSpan(2) }) {
                     when {
                         loadState.refresh is LoadState.Loading -> {
                             Text(text = "Loading In Refresh")
