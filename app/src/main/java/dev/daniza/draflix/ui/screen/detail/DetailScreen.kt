@@ -67,7 +67,9 @@ fun DetailScreen(
         )
 
         is DetailUiState.Error -> {
-            ErrorScreen { requestAttemptCount++ }
+            ErrorScreen((movieState as DetailUiState.Error).message) {
+                requestAttemptCount++
+            }
         }
 
         else -> DetailLoadingScreen()

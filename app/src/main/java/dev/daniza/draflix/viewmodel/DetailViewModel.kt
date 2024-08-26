@@ -26,7 +26,7 @@ class DetailViewModel @Inject constructor(
             if (result.isSuccess) {
                 _movieState.emit(DetailUiState.Success(result.getOrDefault(ResponseSingle())))
             } else {
-                _movieState.emit(DetailUiState.Error)
+                _movieState.emit(DetailUiState.Error(result.exceptionOrNull()?.message.orEmpty()))
             }
         }
     }

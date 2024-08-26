@@ -112,8 +112,11 @@ fun HomeListScreen(
             ListNoInternetScreen()
         }
 
-        if (moviesPagingItems.loadState.refresh is LoadState.Error) {
-            ErrorScreen {
+        if (moviesPagingItems.loadState.refresh is LoadState.Error ||
+            moviesPagingItems.loadState.append is LoadState.Error
+        ) {
+            val e = moviesPagingItems.loadState.refresh as LoadState.Error
+            ErrorScreen(e.error.message.orEmpty()) {
                 searchCoroutineScope.launch {
                     moviesPagingItems.retry()
                 }
