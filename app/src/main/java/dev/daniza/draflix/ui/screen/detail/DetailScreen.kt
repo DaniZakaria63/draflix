@@ -93,7 +93,7 @@ fun DetailMovieScreen(
                 .data(data.Poster.orEmpty())
                 .crossfade(true)
                 .build(),
-            contentDescription = "picture of movie-${data.imdbID}",
+            contentDescription = "movie-${data.imdbID}",
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth()
